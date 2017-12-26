@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>hello vue!</title>
+	 <script type="text/javascript" src="vue.js"></script>  --><!--vue2
+	<!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/vue/1.0.7/vue.min.js"></script> -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.1.17/vue-resource.js"></script>
+	<link rel="stylesheet" type="text/css" href="https://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<style type="text/css">
+		[v-cloak] {
+			display: none;
+		}
+		.wrapper {
+			padding: 20px 10% 0;
+		}
+		.sumPrice {
+			float: right;
+			font-size: 16px;
+		}
+		.error {
+			color: red;
+			display: none;
+		}
+		.authorErr,
+		.priceErr {
+			display: block;
+		}
+	</style>
+</head>
+<body>
+	<div id="app" v-bind:class="{wrapper: wrapper}" v-cloak>
+		<h1>hello vue!</h1>
+		<hr></hr>
+		<div class="book-list">
+			<h3>book list</h3>
+			<table class="table table-bordered table-hover">
+				<thead>
+					<tr>
+						<th>序号</th>
+						<th>书名</th>
+						<th>作者</th>
+						<th @click="sortBy('price')">价格</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tr v-for="book in books">
+					<td>{{book.id}}</td>
+					<td>{{book.name}}</td>
+					<td>{{book.author}}</td>
+					<td>{{book.price}}</td>
+					<td>
+						<button v-if="book.id%2==0" type="button" class="btn btn-success" @click="delBook(book)">删除</button>
+						<button v-else type="button" class="btn btn-danger" @click="delBook(book)">删除</button>
+					</td>
+				</tr>
+
+			</table>
+			<div class="sumPrice">总价：{{sum}}</div>
+		</div>
+		<div class="book-add">
+			<h3>book add</h3>
+			<form class="">
+				<div class="form-group">
+				    <label>书名</label>
+				    <input type="text" class="form-control" placeholder="书名" v-model.trim="book.name" v-on:focus="setNameErr">
+				    <p class="error" v-bind:style="nameErr">{{contentErr.nameTxt}}</p>
+				</div>
+				<div class="form-group">
+				    <label>作者</label>
+				    <input type="text" class="form-control" placeholder="作者" v-model.trim="book.author" @focus="setAuthorErr">
+				    <p class="error" v-bind:class="{authorErr: authorErr}">{{contentErr.authorTxt}}</p>
+				</div>
+				<div class="form-group">
+				    <label>价格</label>
+				    <input type="number" class="form-control" placeholder="价格" v-model.number="book.price" @focus="setPriceErr">
+				    <p class="error" v-bind:class="{priceErr: priceErr}">{{contentErr.priceTxt}}</p>
+				</div>
+			</form>
+			<button type="button" class="btn btn-primary btn-lg btn-block" v-on:click="addBook">添加</button>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		new Vue({
+			el: '#app',
+			// ready: function(){
+			// 	this.$http.get('/book.json').then(function(data){
+			// 		this.$set('books', data);
+			// 	}, function(data, status, request){
+			// 		console.log('fail' + status + ',' + request);
+			// 	});
+			// },
+			data: {
+				wrapper: true,
+				nameErr: {
+					display: "none"
+				},
+				authorErr: false,
+				priceErr: false,
+				contentErr: {
+					nameTxt: '书名不能为空！',
+					authorTxt: '作者不能为空！',
+					priceTxt: '价格不能为空！'
+				},
+				book: {
+					id: 0,
+					name: '',
+					author: '',
+					price: ''
+				},
+				books: [{
+	                id: 1,
+	                author: '曹雪芹',
+	                name: '红楼梦',
+	                price: 32.0
+	            }, {
+	                id: 2,
+	                author: '施耐庵',
+	                name: '水浒传',
+	                price: 30.0
+	            }, {
+	                id: '3',
+	                author: '罗贯中',
+	                name: '三国演义',
+	                price: 24.0
+	            }, {
+	                id: 4,
+	                author: '吴承恩',
+	                name: '西游记',
+	                price: 20.0
+	            }]
+			},
+			methods: {
+				validate: function(){
+					var isFalse = true;
+					if(this.book.name == '') {
+						isFalse = false;
+						this.nameErr.display = 'block';
+					}
+					if(this.book.author == '') {
+						isFalse = false;
+						this.authorErr = true;
+					}
+					if(this.book.price == '') {
+						isFalse = false;
+						this.priceErr = true;
+						this.contentErr.priceTxt = '价格不能为空！';
+					} else {
+						var reg = /\d/g;
+						if(!reg.test(this.book.price)) {
+							isFalse = false;
+							this.priceErr = true;
+							this.contentErr.priceTxt = '价格只能为数值！';
+						}
+					}
+					return isFalse;
+				},
+				addBook: function(){
+					if(!this.validate()) { return false;}
+					this.book.id = this.books.length + 1;
+					this.books.push(this.book);
+					// this.book = '';
+					this.book = {
+						id: 0,
+						name: '',
+						author: '',
+						price: ''
+					};
+					//这里比较奇怪，为什么不能用下面的方法~   原因是对象的存储方式引起的
+					 // for(var item in this.book) {
+						// if(item == 'id') {
+						// 	this.book[item] = 0;
+						// } else {
+						// 	this.book[item] = '';
+						// }
+					 // }
+				},
+				delBook: function(book){
+					//vue2 已经废掉$remove
+					// this.books.$remove(book);
+					var index = this.books.indexOf(book);
+					this.books.splice(index, 1);
+				},
+				setNameErr: function(){
+					this.nameErr.display = 'none';
+				},
+				setAuthorErr: function(){
+					this.authorErr = false;
+				},
+				setPriceErr: function(){
+					this.priceErr = false;
+				},
+				sortBy: function(sortparam){ //排序
+					var compare = function(property){
+						return function(obj1, obj2){
+							var value1 = obj1[property];
+							var value2 = obj2[property];
+							return value1 - value2;
+						};
+					};
+					this.books.sort(compare('price'));
+				}
+
+			},
+			computed: {
+				sum: function(){
+					var r = 0;
+					for(var i=0,len=this.books.length; i<len; i++) {
+						var item = this.books[i];
+						r += Number(item.price);
+					}
+					return r;
+				}
+			}
+		});
+	</script>
+
+</body>
+</html>
